@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trivia</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+</head>
+<body>
+
+    <div class="trivia_panel" id="start_panel">
+        <div id="start_button_1">
+            <p>Start Game</p>
+        </div>
+    </div>
+
+
+    <div class="trivia_panel" id="question_panel">
+        <p id="question_timer">1</p>  
+        <p id="full_question">1</p>
+        <p id="question_1">1</p>
+        <p id="question_2">1</p>
+        <p id="question_3">1</p>
+        <p id="question_4">1</p>
+    </div>
+
+
+    <div class="trivia_panel" id="question_feedback">
+        <p id="right_or_wrong">2</p>
+        <p id="correct_answer">2</p>
+    </div>
+
+
+    <div class="trivia_panel" id="final_score">
+        <p id="right_answers">3</p>
+        <p id="wrong_answers">3</p>
+        <p id="not_answered">3</p>
+        <div id="start_button_2">
+            <p>Start Game</p>
+        </div>
+    </div>
+
+
+    <script> 
+    $(document).ready(function()
+    {
+
+        // create an object that will store the data for each question 
+        var arrayOfQuestions = [];
+
+        arrayOfQuestions[0] = {
+            question: "What company invented JavaScript?",
+            options: ["Microsoft", "Apple", "Netscape", "Oracle"],
+            awnser: "Netscape",
+            userAwnser: "",
+            awnseredCorrect: false
+        }
+
+        arrayOfQuestions[1] = {
+            question: "Who designed JavaScript?",
+            options: ["Brendan Eich", "Grace Hopper", "Douglas Crockford", "Linus Torvalds"],
+            awnser: "Brendan Eich",
+            userAwnser: "",
+            awnseredCorrect: false
+        }
+
+        arrayOfQuestions[2] = {
+            question: "Which of the following is NOT a primitive datatype in JavaScript?",
+            options: ["Object", "String", "Double", "Null"],
+            awnser: "Double",
+            userAwnser: "",
+            awnseredCorrect: false
+        }
+
+        arrayOfQuestions[3] = {
+            question: "When was JavaScript released?",
+            options: ["1988", "1995", "1998", "2000"],
+            awnser: "1995",
+            userAwnser: "",
+            awnseredCorrect: false
+        }
+
+
+        var timeLeft;
+        var showTime;
+        var lastPage;
+        var nextPage;
+        var interval;
+        var currentQuestion = 0;
+
+        // hide one set of divs and show another
+        function switchPanel (lastPage, nextPage) {
+            $(lastPage).hide();
+            $(nextPage).show();
+        }
+
+        function writeQuestion (quest, op1, op2, op3, op4) {
+            $("#full_question").text(quest);
+            $("#question_1").text(op1);
+            $("#question_2").text(op2);
+            $("#question_3").text(op3);
+            $("#question_4").text(op4);
+        }
+
+        // Create game timer that handles the timeouts, moves from div to div, and displays the time left (optional)
+        function setTimer (time, show, last, next) {
+            // var need to be declared outside the function with the logic
+            timeLeft = time + 1;
+            showTime = show;
+            lastPage = last;
+            nextPage = next;
+            gameTimer();
+            interval = setInterval(gameTimer, 1000);
+        }
+
+        // holds timer logic
+        function gameTimer () { 
+           // decrement timer    
+           timeLeft--; 
+            // if you want to show the timer on screen set this to true 
+           if (showTime === true) {
+                $("#question_timer").html("Time left to awnser the question: " + timeLeft);              
+           }   
+
+           if (timeLeft === 0) {
+               // stops the timer from going below 0
+               clearInterval(interval); 
+                // moves to next page after time is up 
+               switchPanel(lastPage, nextPage); 
+               // let the user know they timed out
+               if (showTime === true) {
+                    $("#right_or_wrong").text("You ran out of time");
+                    $("#correct_answer").text("The correct awnser is " + arrayOfQuestions[currentQuestion].awnser);
+                    // increase the question counter 
+                    currentQuestion++;
+               }                                         
+           }   
+        }
+
+        function checkUserAwnser (quest, last, next) {
+            // stops the timer
+            clearInterval(interval);
+            // grab the text out of the div and save it
+            arrayOfQuestions[currentQuestion].userAwnser = $(quest).text();
+            // check to see if the awnser saved matches the right awnser, if so save that info
+            if (arrayOfQuestions[currentQuestion].userAwnser === arrayOfQuestions[currentQuestion].awnser) {
+                arrayOfQuestions[currentQuestion].awnseredCorrect = true;
+            }
+            // switch to the next pannel after a delay and give the user feedback on what happened
+            switchPanel (last, next);
+
+            if (arrayOfQuestions[currentQuestion].awnseredCorrect === true) {          
+                gameNextStep("Correct!", "Way to go");
+            } else {
+                gameNextStep("Incorrect", "The correct awnser is " + arrayOfQuestions[currentQuestion].awnser);
+            }
+        }
+
+        function gameNextStep (rightWrong, correctInfo) {
+            $("#right_or_wrong").text(rightWrong);
+                $("#correct_answer").text(correctInfo);
+                // increase the question counter  
+                currentQuestion++;
+                // move on to next question
+                setTimer(4, false, "#question_feedback", "#question_panel");
+
+                writeQuestion(arrayOfQuestions[currentQuestion].question, arrayOfQuestions[currentQuestion].options[0], 
+                arrayOfQuestions[currentQuestion].options[1], arrayOfQuestions[currentQuestion].options[2], arrayOfQuestions[currentQuestion].options[3]);
+        }
+
+
+
+
+        // On page load hide all the trivia panels and show the player the start panel
+        switchPanel (".trivia_panel", "#start_panel");
+    
+        // start the game 
+        $("#start_button_1").click( function() {
+            switchPanel("#start_panel", "#question_panel");
+            writeQuestion(arrayOfQuestions[currentQuestion].question, arrayOfQuestions[currentQuestion].options[0], 
+                arrayOfQuestions[currentQuestion].options[1], arrayOfQuestions[currentQuestion].options[2], arrayOfQuestions[currentQuestion].options[3]);
+            setTimer(10, true);
+        });
+
+
+        $("#question_1").click( function() {
+            checkUserAwnser("#question_1", "#question_panel", "#question_feedback");
+        });
+
+
+        $("#question_2").click( function() {
+            checkUserAwnser("#question_2", "#question_panel", "#question_feedback");
+        });
+
+
+        $("#question_3").click( function() {
+            checkUserAwnser("#question_3", "#question_panel", "#question_feedback");
+        });
+
+
+        $("#question_4").click( function() {
+            checkUserAwnser("#question_4", "#question_panel", "#question_feedback");
+        });
+
+    
+    });
+    </script>
+    
+</body>
+</html>
